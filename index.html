@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix - Fernando Lepiscopo</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: black;
+            font-family: 'Share+Tech+Mono', monospace;
+        }
+        canvas {
+            display: block;
+        }
+        #matrix-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        #name-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            color: transparent;
+            font-size: 5rem;
+            letter-spacing: 15px;
+            white-space: nowrap;
+            pointer-events: none;
+            user-select: none;
+        }
+        @media (max-width: 768px) {
+            #name-overlay {
+                font-size: 2rem;
+                letter-spacing: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="name-overlay">FERNANDO LEPISCOPO</div>
+    <canvas id="matrix-canvas"></canvas>
+    <script>
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+        const nameOverlay = document.getElementById('name-overlay');
+        let width, height, columns;
+        const fontSize = 20;
+        const nameStr = "FERNANDO LEPISCOPO";
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$+-*/=%\"'#&_(),.;:?!\\|{}<>[] ";
+        let drops = [];
+        let namePositions = [];
+        function init() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            columns = Math.floor(width / fontSize);
+            drops = [];
+            for (let i = 0; i < columns; i++) {
+                drops[i] = Math.random() * -100; 
+            }
+            calculateNamePositions();
+        }
+        function calculateNamePositions() {
+            const rect = nameOverlay.getBoundingClientRect();
+            const textWidth = rect.width;
+            const startX = rect.left;
+            const targetY = rect.top + (rect.height / 2);
+            namePositions = [];
+            for (let i = 0; i < nameStr.length; i++) {
+                if (nameStr[i] === " ") continue;
+                const charX = startX + (i * (textWidth / nameStr.length)) + (fontSize / 2);
+                const colIndex = Math.floor(charX / fontSize);
+                namePositions.push({
+                    char: nameStr[i],
+                    col: colIndex,
+                    y: targetY,
+                    fixed: false
+                });
+            }
+        }
+        function draw() {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+            ctx.fillRect(0, 0, width, height);
+            ctx.font = fontSize + "px 'Share+Tech+Mono'";
+            for (let i = 0; i < drops.length; i++) {
+                const text = chars.charAt(Math.floor(Math.random() * chars.length));
+                const x = i * fontSize;
+                const y = drops[i] * fontSize;
+                const nameChar = namePositions.find(p => p.col === i);
+                if (nameChar && Math.abs(y - nameChar.y) < fontSize) {
+                    ctx.fillStyle = "#FFFFFF"; 
+                    ctx.fillText(nameChar.char, x, nameChar.y);
+                    nameChar.fixed = true;
+                }
+                ctx.fillStyle = "#0F0"; // Verde Matrix
+                ctx.fillText(text, x, y);
+                if (y > height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+            namePositions.forEach(p => {
+                if (p.fixed) {
+                    ctx.fillStyle = "#00FF41"; 
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = "#00FF41";
+                    ctx.fillText(p.char, p.col * fontSize, p.y);
+                    ctx.shadowBlur = 0; 
+                }
+            });
+        }
+        window.addEventListener('resize', init);
+         init();
+        setInterval(draw, 35);
+    </script>
+</body>
+</html>
