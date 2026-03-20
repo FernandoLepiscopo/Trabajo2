@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evolución Dialéctica de la Programación</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,700;1,400&family=Roboto:wght@300;400;500;700&display=swap');
+
+        :root {
+            --bg-color: #121212;
+            --surface: #1e1e1e;
+            --surface-hover: #2d2d2d;
+            --border: #333333;
+            --text-main: #ffffff;
+            --text-muted: #aaaaaa;
+            --accent: #61afef;
+            --node-color: #98c379;
+            --node-hover: #e5c07b;
+            --line-color: #444444;
+            --influence-out: #e06c75;
+            --influence-in: #56b6c2;
+            
+            --cat-sistemas: #e06c75; 
+            --cat-web: #e5c07b;      
+            --cat-ciencia: #61afef;  
+            --cat-datos: #98c379;    
+            --cat-moviles: #c678dd;  
+            --cat-backend: #d19a66;  
+            --cat-academia: #56b6c2; 
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            background-color: var(--surface);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        header h1 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        header p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .main-container {
+            display: flex;
+            flex: 1;
+            height: calc(100vh - 60px);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Sidebar Filters */
+        .sidebar {
+            width: 250px;
+            background-color: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 5;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-scrollable {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem 1.5rem 0.5rem;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .filter-list {
+            list-style: none;
+            padding: 1rem;
+        }
+
+        .filter-btn {
+            width: 100%;
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-main);
+            text-align: left;
+            padding: 0.8rem 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Roboto', sans-serif;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-btn:hover {
+            background-color: var(--surface-hover);
+        }
+
+        .filter-btn.active {
+            background-color: var(--surface-hover);
+            border-color: var(--border);
+            font-weight: 500;
+        }
+
+        .cat-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        /* Credits Section */
+        .credits-section {
+            border-top: 1px solid var(--border);
+            padding: 1.2rem 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: background 0.2s ease;
+            margin-top: auto;
+        }
+
+        .credits-section:hover, .credits-section.active {
+            background: var(--surface-hover);
+        }
+
+        .credits-section-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 8px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .credits-section-content {
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .credits-section-content strong {
+            color: var(--text-main);
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .credits-section-content span {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        /* Canvas Area */
+        .canvas-wrapper {
+            flex: 1;
+            position: relative;
+            background-image: 
+                linear-gradient(var(--border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 50px 50px;
+            background-position: center center;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: grab;
+        }
+        
+        canvas:active {
+            cursor: grabbing;
+        }
+
+        .canvas-instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            pointer-events: none;
+            border: 1px solid var(--border);
+        }
+
+        /* Details Panel */
+        .details-panel {
+            width: 350px;
+            background-color: var(--surface);
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 20;
+            box-shadow: -5px 0 25px rgba(0,0,0,0.5);
+        }
+
+        .details-panel.open {
+            transform: translateX(0);
+        }
+
+        .details-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .details-title-wrapper h2 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.8rem;
+            color: var(--accent);
+            margin-bottom: 0.2rem;
+        }
+
+        .details-title-wrapper span {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            font-weight: 300;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close-btn:hover {
+            color: white;
+        }
+
+        .details-content {
+            padding: 1.5rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .detail-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .detail-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 0.4rem;
+        }
+
+        .detail-value {
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .hito-box {
+            background-color: rgba(97, 175, 239, 0.1);
+            border-left: 3px solid var(--accent);
+            padding: 10px 15px;
+            margin-top: 5px;
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+
+        .tag-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 5px;
+        }
+
+        .tag {
+            background-color: var(--surface-hover);
+            border: 1px solid var(--border);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        pre {
+            background-color: #181818;
+            padding: 1rem;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: #dcdcaa;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .sidebar {
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                transform: translateX(-100%);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .details-panel {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div>
+            <h1>Evolución Dialéctica de la Programación</h1>
+        </div>
+        <p>Análisis interactivo de abstracción y paradigmas</p>
+    </header>
+
+    <div class="main-container">
+        <!-- Sidebar Filters -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-scrollable">
+                <div class="sidebar-header">Propósito Principal</div>
+                <ul class="filter-list" id="filterList">
+                    <li><button class="filter-btn active" data-filter="Todos"><span class="cat-dot" style="background:#ffffff"></span> Todos</button></li>
+                    <li><button class="filter-btn" data-filter="Sistemas y Kernel"><span class="cat-dot" style="background:var(--cat-sistemas)"></span> Sistemas y Kernel</button></li>
+                    <li><button class="filter-btn" data-filter="Web e Interactividad"><span class="cat-dot" style="background:var(--cat-web)"></span> Web e Interactividad</button></li>
+                    <li><button class="filter-btn" data-filter="Ciencia e Investigación"><span class="cat-dot" style="background:var(--cat-ciencia)"></span> Ciencia e Investigación</button></li>
+                    <li><button class="filter-btn" data-filter="Negocios y Datos"><span class="cat-dot" style="background:var(--cat-datos)"></span> Negocios y Datos</button></li>
+                    <li><button class="filter-btn" data-filter="Desarrollo Móvil"><span class="cat-dot" style="background:var(--cat-moviles)"></span> Desarrollo Móvil</button></li>
+                    <li><button class="filter-btn" data-filter="Backend y Scripting"><span class="cat-dot" style="background:var(--cat-backend)"></span> Backend y Scripting</button></li>
+                    <li><button class="filter-btn" data-filter="Academia e IA"><span class="cat-dot" style="background:var(--cat-academia)"></span> Academia e IA</button></li>
+                </ul>
+            </div>
+
+            <!-- Credits Interactive Tab -->
+            <div class="credits-section" id="btnCreditos">
+                <div class="credits-section-label">Acerca de</div>
+                <div class="credits-section-content">
+                    <strong>Creado por Grupo 7 Arrecifes</strong>
+                    <span>Integrantes: Alejo Vazquez y Fernando Lepiscopo</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Canvas Area -->
+        <main class="canvas-wrapper" id="canvasWrapper">
+            <canvas id="timelineCanvas"></canvas>
+            <div class="canvas-instructions">Arrastra para explorar • Clic para detalles</div>
+        </main>
+
+        <!-- Details Panel -->
+        <aside class="details-panel" id="detailsPanel">
+            <div class="details-header">
+                <div class="details-title-wrapper">
+                    <h2 id="detNombre">Lenguaje</h2>
+                    <span id="detAnio">1970</span>
+                </div>
+                <button class="close-btn" id="closePanel">&times;</button>
+            </div>
+            <div class="details-content">
+                <div class="detail-group">
+                    <div class="detail-label">Hito Histórico / Descripción</div>
+                    <div class="detail-value hito-box" id="detHito">Hito importante.</div>
+                </div>
+                
+                <div style="display: flex; gap: 15px; margin-bottom: 1.5rem;">
+                    <div style="flex: 1;">
+                        <div class="detail-label">Creador/Organización</div>
+                        <div class="detail-value" id="detCreador">Creador</div>
+                    </div>
+                    <div style="flex: 1;">
+                        <div class="detail-label">Nivel de Abstracción</div>
+                        <div class="detail-value" id="detAbstraccion">Alto</div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 15px; margin-bottom: 1.5rem;">
+                    <div style="flex: 1;">
+                        <div class="detail-label">Paradigma</div>
+                        <div class="detail-value" id="detParadigma">Multiparadigma</div>
+                    </div>
+                    <div style="flex: 1;">
+                        <div class="detail-label">Tipado</div>
+                        <div class="detail-value" id="detTipado">Estático</div>
+                    </div>
+                </div>
+
+                <div class="detail-group">
+                    <div class="detail-label">Características Principales</div>
+                    <div class="tag-container" id="detCaracteristicas">
+                        <!-- Tags injected by JS -->
+                    </div>
+                </div>
+
+                <div class="detail-group">
+                    <div class="detail-label">Propósito y Usos</div>
+                    <div class="detail-value" id="detProposito">Usos...</div>
+                </div>
+
+                <div class="detail-group" id="influencesBox" style="display: flex; gap: 15px;">
+                    <div style="flex:1">
+                        <div class="detail-label" style="color: var(--influence-in)">Influenciado por</div>
+                        <div class="detail-value" id="detInfPor" style="font-size: 0.85rem; color: #ddd;">-</div>
+                    </div>
+                    <div style="flex:1">
+                        <div class="detail-label" style="color: var(--influence-out)">Influyó en</div>
+                        <div class="detail-value" id="detInfEn" style="font-size: 0.85rem; color: #ddd;">-</div>
+                    </div>
+                </div>
+
+                <div class="detail-group">
+                    <div class="detail-label">Sintaxis Característica / Código</div>
+                    <pre><code id="detSintaxis">print("Hello World")</code></pre>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        /** * 1. ARQUITECTURA DE DATOS (JSON)
+         */
+        const programmingLanguages = [
+            {
+                id: "plankalkul", nombre: "Plankalkül", anio: 1945, categoria: "Ciencia e Investigación",
+                hito: "Primer lenguaje algorítmico de la historia, diseñado antes de las computadoras electrónicas modernas.",
+                creador: "Konrad Zuse", paradigma: "Imperativo", abstraccion: "Alto Nivel (para su época)", tipado: "Estático",
+                caracteristicas: ["Estructuras de datos complejas", "Condicionales", "Ausencia de recursividad"],
+                proposito: "Cálculo teórico de problemas generales y científicos.",
+                influencias: { por: [], en: ["ALGOL 60"] },
+                sintaxis: "V0 = A0 + A1\n(Representación de asignaciones complejas)"
+            },
+            {
+                id: "fortran", nombre: "FORTRAN", anio: 1957, categoria: "Ciencia e Investigación",
+                hito: "Primer lenguaje de alto nivel ampliamente utilizado y estandarizado con un compilador optimizado.",
+                creador: "John Backus (IBM)", paradigma: "Imperativo / Procedural", abstraccion: "Medio/Alto Nivel", tipado: "Estático y Fuerte",
+                caracteristicas: ["Eficiencia extrema en cálculo", "Manejo nativo de arreglos", "Estructuras de control básicas"],
+                proposito: "Resolución de problemas científico-técnicos y simulaciones.",
+                influencias: { por: ["Plankalkül"], en: ["ALGOL 60", "BASIC", "C"] },
+                sintaxis: "PROGRAM HELLO\n  PRINT *, 'Hello World'\nEND PROGRAM"
+            },
+            {
+                id: "lisp", nombre: "LISP", anio: 1958, categoria: "Academia e IA",
+                hito: "Introdujo la recursividad, funciones de orden superior y recolección de basura automática.",
+                creador: "John McCarthy (MIT)", paradigma: "Funcional / Declarativo", abstraccion: "Muy Alto Nivel", tipado: "Dinámico y Fuerte",
+                caracteristicas: ["Estructuras de árbol (Listas)", "Homoiconicidad (El código es dato)", "Garbage Collection"],
+                proposito: "Investigación en Inteligencia Artificial matemática y simbólica.",
+                influencias: { por: [], en: ["Smalltalk", "Ruby", "Clojure", "JavaScript"] },
+                sintaxis: "(defun factorial (n)\n  (if (<= n 1)\n      1\n      (* n (factorial (- n 1)))))"
+            },
+            {
+                id: "algol", nombre: "ALGOL 60", anio: 1960, categoria: "Ciencia e Investigación",
+                hito: "Introdujo la estructura de bloques y el alcance léxico (scope). Lenguaje más influyente sintácticamente.",
+                creador: "Comité Internacional", paradigma: "Imperativo / Estructurado", abstraccion: "Alto Nivel", tipado: "Estático y Fuerte",
+                caracteristicas: ["Bloques begin/end", "Gramática formal BNF", "Paso de parámetros por valor y nombre"],
+                proposito: "Descripción estándar de algoritmos en publicaciones académicas.",
+                influencias: { por: ["FORTRAN"], en: ["PASCAL", "C", "Ada"] },
+                sintaxis: "begin\n  print(\"Hello World\")\nend"
+            },
+            {
+                id: "cobol", nombre: "COBOL", anio: 1959, categoria: "Negocios y Datos",
+                hito: "Diseñado para ser leído como inglés común para facilitar la auditoría de negocios.",
+                creador: "Grace Hopper / CODASYL", paradigma: "Imperativo", abstraccion: "Alto Nivel", tipado: "Estático y Débil",
+                caracteristicas: ["Orientado a registros y archivos", "Sintaxis verbose/inglesa", "Manejo preciso de decimales"],
+                proposito: "Gestión administrativa y sistemas financieros bancarios.",
+                influencias: { por: ["FLOW-MATIC"], en: ["SQL"] },
+                sintaxis: "IDENTIFICATION DIVISION.\nPROGRAM-ID. HELLO.\nPROCEDURE DIVISION.\n  DISPLAY 'Hello World'.\n  STOP RUN."
+            },
+            {
+                id: "basic", nombre: "BASIC", anio: 1964, categoria: "Academia e IA",
+                hito: "Masificó el acceso a la programación eliminando la complejidad técnica inicial en microcomputadoras.",
+                creador: "John Kemeny, Thomas Kurtz", paradigma: "Imperativo", abstraccion: "Alto Nivel", tipado: "Dinámico (originalmente)",
+                caracteristicas: ["Comandos simples", "Intérprete interactivo", "Números de línea (GOTO)"],
+                proposito: "Educación universitaria y posterior uso doméstico.",
+                influencias: { por: ["FORTRAN", "ALGOL 60"], en: ["Visual Basic"] },
+                sintaxis: "10 PRINT \"HELLO WORLD\"\n20 END"
+            },
+            {
+                id: "pascal", nombre: "PASCAL", anio: 1970, categoria: "Academia e IA",
+                hito: "Estableció el estándar para la enseñanza de la programación estructurada y la seguridad de tipos.",
+                creador: "Niklaus Wirth", paradigma: "Imperativo / Estructurado", abstraccion: "Alto Nivel", tipado: "Estático y Fuerte",
+                caracteristicas: ["Tipos de datos definidos por usuario", "Estructuras estrictas", "Compilación rápida en una pasada"],
+                proposito: "Formación académica de alta calidad técnica y metodológica.",
+                influencias: { por: ["ALGOL 60"], en: ["Ada", "Object Pascal"] },
+                sintaxis: "program Hello;\nbegin\n  writeln('Hello, World!');\nend."
+            },
+            {
+                id: "c", nombre: "C", anio: 1972, categoria: "Sistemas y Kernel",
+                hito: "Creado junto a UNIX. Permite control total del hardware con una sintaxis portátil.",
+                creador: "Dennis Ritchie (Bell Labs)", paradigma: "Imperativo / Procedural", abstraccion: "Medio Nivel", tipado: "Estático y Débil",
+                caracteristicas: ["Acceso directo a memoria (punteros)", "Compilación muy eficiente", "Hardware-agnóstico"],
+                proposito: "Desarrollo de sistemas operativos, drivers y software embebido.",
+                influencias: { por: ["ALGOL 60"], en: ["C++", "Java", "Go", "Objective-C", "PHP", "Rust"] },
+                sintaxis: "#include <stdio.h>\nint main() {\n   printf(\"Hello, World!\");\n   return 0;\n}"
+            },
+            {
+                id: "smalltalk", nombre: "Smalltalk", anio: 1972, categoria: "Academia e IA",
+                hito: "Definió la 'Pureza' de los objetos: todo en el sistema, incluso los números, es un objeto.",
+                creador: "Alan Kay (Xerox PARC)", paradigma: "Orientado a Objetos (Puro)", abstraccion: "Muy Alto Nivel", tipado: "Dinámico y Fuerte",
+                caracteristicas: ["Paso de mensajes", "Entorno gráfico (GUI) integrado", "Reflexión total"],
+                proposito: "Investigación de interfaces gráficas y modelado computacional.",
+                influencias: { por: ["LISP"], en: ["Objective-C", "Ruby", "Java"] },
+                sintaxis: "Transcript show: 'Hello World'; cr."
+            },
+            {
+                id: "prolog", nombre: "PROLOG", anio: 1972, categoria: "Academia e IA",
+                hito: "Lenguaje único basado en lógica formal (cláusulas de Horn) en lugar de instrucciones secuenciales.",
+                creador: "Alain Colmerauer", paradigma: "Lógico / Declarativo", abstraccion: "Muy Alto Nivel", tipado: "Dinámico",
+                caracteristicas: ["Resolución por Backtracking", "Unificación de patrones", "Base de datos de hechos y reglas"],
+                proposito: "Sistemas expertos, procesamiento de lenguaje natural e Inteligencia Artificial.",
+                influencias: { por: ["LISP"], en: ["Erlang"] },
+                sintaxis: "?- write('Hello World').\n% Hechos lógicos:\npadre(juan, maria)."
+            },
+            {
+                id: "sql", nombre: "SQL", anio: 1974, categoria: "Negocios y Datos",
+                hito: "Revolucionó el almacenamiento con el modelo relacional puro (declarativo).",
+                creador: "D. Chamberlin, R. Boyce (IBM)", paradigma: "Declarativo", abstraccion: "Muy Alto Nivel", tipado: "Estático y Fuerte",
+                caracteristicas: ["Consultas algebraicas relacionales", "Separación de la capa lógica y física", "Manejo de transacciones (ACID)"],
+                proposito: "Manipulación y consulta universal de bases de datos relacionales.",
+                influencias: { por: ["COBOL"], en: [] },
+                sintaxis: "SELECT nombre, paradigma \nFROM Lenguajes \nWHERE anio > 1990;"
+            },
+            {
+                id: "ada", nombre: "Ada", anio: 1980, categoria: "Sistemas y Kernel",
+                hito: "Prioriza la seguridad extrema y el manejo de errores en tiempo real mediante contratos.",
+                creador: "Jean Ichbiah (DoD)", paradigma: "Multiparadigma (Concurrente)", abstraccion: "Alto Nivel", tipado: "Estático y Muy Fuerte",
+                caracteristicas: ["Tipado estricto previniendo desbordamientos", "Concurrencia nativa (Tasks)", "Soporte modular"],
+                proposito: "Sistemas críticos de misión (aviación, defensa, aeroespacial).",
+                influencias: { por: ["PASCAL", "ALGOL 60"], en: ["Rust", "C++"] },
+                sintaxis: "with Ada.Text_IO;\nprocedure Hello is\nbegin\n  Ada.Text_IO.Put_Line(\"Hello World!\");\nend Hello;"
+            },
+            {
+                id: "cpp", nombre: "C++", anio: 1983, categoria: "Sistemas y Kernel",
+                hito: "Introdujo la Programación Orientada a Objetos en sistemas de alto rendimiento sin sacrificar velocidad ('Zero-cost abstractions').",
+                creador: "Bjarne Stroustrup", paradigma: "Multiparadigma", abstraccion: "Medio/Alto Nivel", tipado: "Estático y Fuerte",
+                caracteristicas: ["Clases y objetos", "Manejo de memoria manual (RAII)", "Plantillas (Templates/Metaprogramación)"],
+                proposito: "Motores de videojuegos, navegadores web, software de sistema complejo.",
+                influencias: { por: ["C", "Simula"], en: ["Java", "C#", "Rust", "Swift"] },
+                sintaxis: "#include <iostream>\nint main() {\n    std::cout << \"Hello, World!\";\n    return 0;\n}"
+            },
+            {
+                id: "python", nombre: "Python", anio: 1991, categoria: "Backend y Scripting",
+                hito: "Filosofía enfocada en la extrema legibilidad y productividad del programador ('El Zen de Python').",
+                creador: "Guido van Rossum", paradigma: "Multiparadigma", abstraccion: "Alto Nivel", tipado: "Dinámico y Fuerte",
+                caracteristicas: ["Indentación semántica", "Tipado pato (Duck Typing)", "Amplia librería estándar ('Baterías incluidas')"],
+                proposito: "Ciencia de datos, Inteligencia Artificial, Backend web y automatización.",
+                influencias: { por: ["C", "ALGOL 60", "LISP"], en: ["Ruby", "Go", "Swift"] },
+                sintaxis: "def saludar(nombre):\n    print(f\"Hola, {nombre}!\")\n\nsaludar(\"Mundo\")"
+            },
+            {
+                id: "java", nombre: "Java", anio: 1995, categoria: "Backend y Scripting",
+                hito: "Logró la verdadera portabilidad universal con su filosofía 'Write Once, Run Anywhere' usando la Máquina Virtual de Java (JVM).",
+                creador: "James Gosling (Sun)", paradigma: "Orientado a Objetos", abstraccion: "Alto Nivel", tipado: "Estático y Fuerte",
+                caracteristicas: ["Compilación a Bytecode", "Garbage Collection robusto", "Verificación estricta de clases"],
+                proposito: "Sistemas empresariales masivos, sistemas bancarios y desarrollo Android inicial.",
+                influencias: { por: ["C++", "Smalltalk"], en: ["C#", "Kotlin"] },
+                sintaxis: "class HelloWorld {\n    public static void main(String[] args) {\n        System.out.println(\"Hello, World!\");\n    }\n}"
+            },
+            {
+                id: "javascript", nombre: "JavaScript", anio: 1995, categoria: "Web e Interactividad",
+                hito: "Se convirtió en el lenguaje universal de la web al permitir interactividad nativa en el navegador.",
+                creador: "Brendan Eich (Netscape)", paradigma: "Multiparadigma (Eventos)", abstraccion: "Alto Nivel", tipado: "Dinámico y Débil",
+                caracteristicas: ["Orientación a objetos basada en Prototipos", "Funciones de primera clase", "Ejecución asíncrona (Event Loop)"],
+                proposito: "Desarrollo Frontend interactivo y Backend asíncrono vía Node.js.",
+                influencias: { por: ["C", "LISP", "Java"], en: ["TypeScript"] },
+                sintaxis: "document.getElementById('btn').addEventListener('click', () => {\n    console.log('Hello World');\n});"
+            },
+            {
+                id: "php", nombre: "PHP", anio: 1995, categoria: "Backend y Scripting",
+                hito: "Democratizó la creación de sitios web dinámicos al poder embeber código directamente en archivos HTML.",
+                creador: "Rasmus Lerdorf", paradigma: "Multiparadigma", abstraccion: "Alto Nivel", tipado: "Dinámico y Débil",
+                caracteristicas: ["Embebido directo en HTML", "Variables superglobales ($_POST, etc)", "Enfoque rápido para web"],
+                proposito: "Generación de páginas web dinámicas en el servidor (Ej: WordPress).",
+                influencias: { por: ["C", "Perl"], en: [] },
+                sintaxis: "<?php\n  $saludo = \"Hello World\";\n  echo \"<h1>$saludo</h1>\";\n?>"
+            },
+            {
+                id: "ruby", nombre: "Ruby", anio: 1995, categoria: "Backend y Scripting",
+                hito: "Priorizó de manera explícita la 'felicidad del desarrollador' logrando una sintaxis extremadamente natural y elegante.",
+                creador: "Yukihiro Matsumoto", paradigma: "Multiparadigma (OO puro)", abstraccion: "Alto Nivel", tipado: "Dinámico y Fuerte",
+                caracteristicas: ["Todo es un objeto (hasta los números)", "Metaprogramación muy accesible", "Bloques y Procs"],
+                proposito: "Desarrollo acelerado de startups y aplicaciones web (Ruby on Rails).",
+                influencias: { por: ["Smalltalk", "LISP", "Python"], en: ["Elixir"] },
+                sintaxis: "3.times do\n  puts \"Hello World\"\nend"
+            },
+            {
+                id: "go", nombre: "Go", anio: 2009, categoria: "Backend y Scripting",
+                hito: "Resolvió el problema de la compilación masiva de código de Google y simplificó radicalmente la programación concurrente.",
+                creador: "Pike, Thompson, Griesemer", paradigma: "Imperativo / Concurrente", abstraccion: "Medio/Alto Nivel", tipado: "Estático y Fuerte",
+                caracteristicas: ["Concurrencia nativa fácil (Goroutines y Canales)", "Compilación ultrarrápida a binario", "Colector de basura de baja latencia"],
+                proposito: "Infraestructura de nube, microservicios, contenedores (Docker/K8s).",
+                influencias: { por: ["C", "Python", "CSP"], en: ["Rust"] },
+                sintaxis: "package main\nimport \"fmt\"\nfunc main() {\n    go fmt.Println(\"Hello concurrently\")\n}"
+            },
+            {
+                id: "rust", nombre: "Rust", anio: 2010, categoria: "Sistemas y Kernel",
+                hito: "Demostró que es posible tener seguridad de memoria total sin necesitar un recolector de basura, evitando bugs de seguridad.",
+                creador: "Graydon Hoare (Mozilla)", paradigma: "Multiparadigma (Sistemas)", abstraccion: "Medio/Alto Nivel", tipado: "Estático y Muy Fuerte",
+                caracteristicas: ["Borrow Checker (reglas de propiedad estrictas)", "Zero-cost abstractions", "Prevención de Data Races por diseño"],
+                proposito: "Sistemas operativos, motores web, criptografía, software de muy alto rendimiento.",
+                influencias: { por: ["C++", "OCaml", "Ada"], en: ["Swift"] },
+                sintaxis: "fn main() {\n    let mut msg = String::from(\"Hello\");\n    msg.push_str(\", World!\");\n    println!(\"{}\", msg);\n}"
+            },
+            {
+                id: "kotlin", nombre: "Kotlin", anio: 2011, categoria: "Desarrollo Móvil",
+                hito: "Modernizó drásticamente el desarrollo en el ecosistema Java, siendo declarado por Google el estándar oficial para Android.",
+                creador: "JetBrains", paradigma: "Multiparadigma", abstraccion: "Alto Nivel", tipado: "Estático y Fuerte",
+                caracteristicas: ["Null-safety garantizada por compilador", "Corrutinas asíncronas", "Interoperabilidad 100% con Java"],
+                proposito: "Desarrollo moderno de aplicaciones Android y Backend en la JVM.",
+                influencias: { por: ["Java", "C#", "Scala"], en: ["Swift"] },
+                sintaxis: "fun main() {\n    val name: String? = \"World\"\n    println(\"Hello, ${name ?: \"Stranger\"}\")\n}"
+            },
+            {
+                id: "swift", nombre: "Swift", anio: 2014, categoria: "Desarrollo Móvil",
+                hito: "Reemplazó el antiguo Objective-C de Apple por un lenguaje moderno, veloz e interactivo ('Playgrounds').",
+                creador: "Chris Lattner (Apple)", paradigma: "Multiparadigma", abstraccion: "Alto Nivel", tipado: "Estático y Fuerte",
+                caracteristicas: ["Protocol-Oriented Programming", "Tipos opcionales seguros", "Inferencia de tipos avanzada"],
+                proposito: "Desarrollo nativo exclusivo y optimizado para iOS, macOS y ecosistema Apple.",
+                influencias: { por: ["Objective-C", "Rust", "Python", "Ruby"], en: [] },
+                sintaxis: "let name = \"World\"\nprint(\"Hello, \\(name)!\")"
+            }
+        ];
+
+        // Mapeo de colores para categorías
+        const categoryColors = {
+            "Sistemas y Kernel": "var(--cat-sistemas)",
+            "Web e Interactividad": "var(--cat-web)",
+            "Ciencia e Investigación": "var(--cat-ciencia)",
+            "Negocios y Datos": "var(--cat-datos)",
+            "Desarrollo Móvil": "var(--cat-moviles)",
+            "Backend y Scripting": "var(--cat-backend)",
+            "Academia e IA": "var(--cat-academia)"
+        };
+
+        /**
+         * 2. LÓGICA DEL CANVAS
+         */
+        const canvas = document.getElementById('timelineCanvas');
+        const ctx = canvas.getContext('2d');
+        const canvasWrapper = document.getElementById('canvasWrapper');
+
+        // Estado del visualizador
+        let width = 0, height = 0;
+        let scale = 30; // Píxeles por año
+        let offsetX = 50; // Desplazamiento horizontal inicial
+        let offsetY = 0; // Desplazamiento vertical para centrar el eje
+        let minYear = 1940;
+        let maxYear = 2030;
+        
+        let activeFilter = "Todos";
+        let hoveredNode = null;
+        let selectedNode = null;
+
+        // Geometría de los nodos computada en el resize/update
+        let renderNodes = [];
+
+        function resizeCanvas() {
+            width = canvasWrapper.clientWidth;
+            height = canvasWrapper.clientHeight;
+            // Manejar monitores de alta densidad (Retina)
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            ctx.scale(dpr, dpr);
+            
+            offsetY = height / 2;
+            computeLayout();
+            draw();
+        }
+
+        function computeLayout() {
+            renderNodes = [];
+            
+            // Ordenar lenguajes cronológicamente
+            let sorted = [...programmingLanguages].sort((a,b) => a.anio - b.anio);
+            
+            // Lógica simple de pistas (tracks) verticales para evitar solapamientos
+            const tracks = [0, 1, -1, 2, -2, 3, -3, 4, -4]; // Alternando arriba/abajo
+            let trackLastYear = new Array(10).fill(1900); // Guardar último año por pista (shift index by 5 to avoid negative)
+
+            sorted.forEach(lang => {
+                const x = (lang.anio - minYear) * scale;
+                
+                // Encontrar una pista libre
+                let assignedTrack = 0;
+                for(let i=0; i<tracks.length; i++) {
+                    let trackIndex = tracks[i] + 5;
+                    // Dejar 3 "años" de espacio mínimo para evitar superposiciones de texto/nodos
+                    if(lang.anio > trackLastYear[trackIndex] + 3) {
+                        assignedTrack = tracks[i];
+                        trackLastYear[trackIndex] = lang.anio;
+                        break;
+                    }
+                }
+
+                // Separación vertical de las pistas
+                const y = offsetY + (assignedTrack * 60);
+
+                renderNodes.push({
+                    data: lang,
+                    localX: x,
+                    localY: y,
+                    r: 10,
+                    track: assignedTrack
+                });
+            });
+        }
+
+        // --- FUNCIONES DE DIBUJO ---
+        
+        function draw() {
+            // Limpiar
+            ctx.clearRect(0, 0, width, height);
+
+            ctx.save();
+            ctx.translate(offsetX, 0);
+
+            drawAxis();
+            
+            // Si hay un nodo seleccionado, dibujar las influencias
+            if (selectedNode) {
+                drawInfluences(selectedNode);
+            }
+
+            drawNodes();
+
+            ctx.restore();
+        }
+
+        function drawAxis() {
+            ctx.beginPath();
+            ctx.moveTo(0, offsetY);
+            ctx.lineTo((maxYear - minYear) * scale, offsetY);
+            ctx.strokeStyle = '#444';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Ticks de años
+            ctx.textAlign = "center";
+            ctx.textBaseline = "top";
+            ctx.font = "12px 'JetBrains Mono'";
+            ctx.fillStyle = "#888";
+
+            for(let y = 1940; y <= 2025; y+=5) {
+                const x = (y - minYear) * scale;
+                ctx.beginPath();
+                ctx.moveTo(x, offsetY - 5);
+                ctx.lineTo(x, offsetY + 5);
+                ctx.stroke();
+                ctx.fillText(y, x, offsetY + 10);
+            }
+        }
+
+        function drawInfluences(targetNode) {
+            const data = targetNode.data;
+            
+            // Dibujar líneas a los que INFLUYÓ (rojo)
+            data.influencias.en.forEach(nombreInf => {
+                const infNode = renderNodes.find(n => n.data.nombre === nombreInf);
+                if(infNode) drawBezierLink(targetNode, infNode, 'var(--influence-out)');
+            });
+
+            // Dibujar líneas de los que fue INFLUENCIADO (cian)
+            data.influencias.por.forEach(nombreInf => {
+                const infNode = renderNodes.find(n => n.data.nombre === nombreInf || n.data.id === nombreInf.toLowerCase());
+                if(infNode) drawBezierLink(infNode, targetNode, 'var(--influence-in)');
+            });
+        }
+
+        function drawBezierLink(nodeA, nodeB, color) {
+            ctx.beginPath();
+            ctx.moveTo(nodeA.localX, nodeA.localY);
+            
+            // Control points para que la curva fluya suave horizontalmente
+            const cp1x = nodeA.localX + (nodeB.localX - nodeA.localX) / 2;
+            const cp1y = nodeA.localY;
+            const cp2x = cp1x;
+            const cp2y = nodeB.localY;
+
+            ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, nodeB.localX, nodeB.localY);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        function drawNodes() {
+            renderNodes.forEach(node => {
+                // Opacidad según el filtro
+                let isFaded = false;
+                if (activeFilter !== "Todos" && node.data.categoria !== activeFilter) {
+                    isFaded = true;
+                }
+
+                ctx.globalAlpha = isFaded ? 0.2 : 1.0;
+                
+                // Color base
+                const color = categoryColors[node.data.categoria] || '#ffffff';
+
+                // Línea de anclaje al eje
+                ctx.beginPath();
+                ctx.moveTo(node.localX, offsetY);
+                ctx.lineTo(node.localX, node.localY);
+                ctx.strokeStyle = '#444';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                // Círculo
+                ctx.beginPath();
+                ctx.arc(node.localX, node.localY, node.r, 0, Math.PI * 2);
+                
+                if (node === selectedNode) {
+                    ctx.fillStyle = color;
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = color;
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                    ctx.lineWidth = 3;
+                    ctx.strokeStyle = "#fff";
+                    ctx.stroke();
+                } else if (node === hoveredNode) {
+                    ctx.fillStyle = color;
+                    ctx.fill();
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = "#fff";
+                    ctx.stroke();
+                } else {
+                    ctx.fillStyle = "#1e1e1e"; // hueco central
+                    ctx.fill();
+                    ctx.lineWidth = 3;
+                    ctx.strokeStyle = color;
+                    ctx.stroke();
+                }
+
+                // Etiqueta del nombre (Mostrar siempre si no hay zoom/saturación o si es hover)
+                // Para una UI más limpia, mostraremos el nombre si el track no está muy pegado al eje,
+                // pero si tiene hover lo mostramos grande.
+                
+                if(!isFaded || node === hoveredNode) {
+                    ctx.fillStyle = (node === hoveredNode || node === selectedNode) ? "#fff" : "#ccc";
+                    ctx.font = (node === hoveredNode || node === selectedNode) ? "bold 13px Roboto" : "12px Roboto";
+                    ctx.textAlign = "center";
+                    
+                    // Posición texto dependiendo del track (arriba o abajo del nodo)
+                    const textY = node.track >= 0 ? node.localY + 20 : node.localY - 15;
+                    
+                    ctx.fillText(node.data.nombre, node.localX, textY);
+                }
+            });
+
+            ctx.globalAlpha = 1.0;
+        }
+
+        // --- INTERACCIONES DEL MOUSE ---
+        
+        let isDragging = false;
+        let lastMouseX = 0;
+
+        canvas.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            lastMouseX = e.clientX;
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            // Paneo
+            if (isDragging) {
+                const deltaX = e.clientX - lastMouseX;
+                offsetX += deltaX;
+                lastMouseX = e.clientX;
+                draw();
+                return; // Si arrastramos, no chequear hovers
+            }
+
+            // Chequeo de Hover
+            // Transformar mouse coords al espacio del canvas local
+            const localX = mouseX - offsetX;
+            const localY = mouseY;
+            
+            let found = null;
+            // Buscar el nodo en reversa (los dibujados al final tienen prioridad)
+            for (let i = renderNodes.length - 1; i >= 0; i--) {
+                const node = renderNodes[i];
+                // Ignorar colisión en nodos filtrados
+                if (activeFilter !== "Todos" && node.data.categoria !== activeFilter) continue;
+
+                const dx = node.localX - localX;
+                const dy = node.localY - localY;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                
+                // Hitbox un poco más generoso que el radio visible (r=10 + padding)
+                if (dist < node.r + 5) {
+                    found = node;
+                    break;
+                }
+            }
+
+            if (found !== hoveredNode) {
+                hoveredNode = found;
+                canvas.style.cursor = found ? 'pointer' : 'grab';
+                draw();
+            }
+        });
+
+        window.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            isDragging = false;
+            if (hoveredNode) {
+                hoveredNode = null;
+                draw();
+            }
+        });
+
+        canvas.addEventListener('click', () => {
+            if (hoveredNode) {
+                selectedNode = hoveredNode;
+                draw();
+                openDetails(selectedNode.data);
+            } else {
+                // Clic en el fondo deselecciona
+                selectedNode = null;
+                draw();
+                closeDetails();
+            }
+        });
+
+        // Zoom simple con scroll
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            // Determinar posición local del mouse antes del zoom para mantener centro
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const localMouseX = mouseX - offsetX;
+            const yearAtMouse = localMouseX / scale + minYear;
+
+            // Escalar
+            const zoomDelta = e.deltaY > 0 ? 0.9 : 1.1;
+            scale = Math.max(10, Math.min(100, scale * zoomDelta));
+
+            // Ajustar offsetX para que el año bajo el mouse siga ahí
+            offsetX = mouseX - (yearAtMouse - minYear) * scale;
+            
+            computeLayout(); // re-calcular layouts con nueva escala
+            draw();
+        });
+
+
+        /**
+         * 3. LÓGICA DE INTERFAZ DE USUARIO (UI)
+         */
+        const detailsPanel = document.getElementById('detailsPanel');
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const btnCreditos = document.getElementById('btnCreditos');
+
+        // Sidebar Filters
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btnCreditos.classList.remove('active');
+                
+                const target = e.currentTarget;
+                target.classList.add('active');
+                activeFilter = target.getAttribute('data-filter');
+                
+                // Opcional: Centrar en el primer lenguaje del filtro (mejora UX)
+                if (activeFilter !== "Todos") {
+                    const firstMatch = renderNodes.find(n => n.data.categoria === activeFilter);
+                    if (firstMatch) {
+                        // Centrar el offsetX suavemente (sin animación compleja por simplicidad de un archivo)
+                        offsetX = (width / 2) - firstMatch.localX;
+                    }
+                }
+                
+                selectedNode = null; // Cerrar detalles al cambiar filtro
+                closeDetails();
+                draw();
+            });
+        });
+
+        // Logica para la Pestaña Interactiva de Créditos (Easter Egg del Grupo)
+        btnCreditos.addEventListener('click', () => {
+            // Deseleccionar los demás filtros
+            filterBtns.forEach(b => b.classList.remove('active'));
+            btnCreditos.classList.add('active');
+            
+            // Quitar selecciones en el canvas
+            selectedNode = null;
+            draw();
+
+            // Cargar datos del Grupo 7 Arrecifes en el Panel
+            document.getElementById('detNombre').innerText = "Grupo 7 Arrecifes";
+            document.getElementById('detAnio').innerText = new Date().getFullYear();
+            
+            document.getElementById('detHito').innerText = "Proyecto académico sobre la Evolución Dialéctica de la Programación presentado para la facultad.";
+            
+            document.getElementById('detCreador').innerText = "Alejo Vazquez & Fernando Lepiscopo";
+            document.getElementById('detAbstraccion').innerText = "Máxima Dedicación";
+            
+            document.getElementById('detParadigma').innerText = "Desarrollo Colaborativo y Orientado a Aprobar";
+            document.getElementById('detTipado').innerText = "Dinámico y Creativo";
+            
+            document.getElementById('detProposito').innerText = "Investigar, comprender y exponer la evolución cronológica y conceptual de los lenguajes de programación mediante una interfaz web interactiva.";
+            
+            // Ocultar sección de influencias para el grupo
+            document.getElementById('influencesBox').style.display = 'none';
+
+            // Etiquetas del Grupo
+            const tagContainer = document.getElementById('detCaracteristicas');
+            tagContainer.innerHTML = '';
+            ['Trabajo en Equipo', 'Investigación Histórica', 'Desarrollo Web (Canvas API)', 'UI/UX Minimalista'].forEach(c => {
+                const span = document.createElement('span');
+                span.className = 'tag';
+                span.innerText = c;
+                tagContainer.appendChild(span);
+            });
+
+            // Código de broma / easter egg
+            document.getElementById('detSintaxis').innerText = `if (proyecto.isExcellent()) {\n    calificacion = 10;\n    aprobarMateria();\n    celebrar();\n}`;
+
+            detailsPanel.classList.add('open');
+        });
+
+        // Detalles Panel Normales
+        function openDetails(data) {
+            btnCreditos.classList.remove('active');
+            document.getElementById('influencesBox').style.display = 'flex'; // Asegurar que sea visible para lenguajes
+            
+            document.getElementById('detNombre').innerText = data.nombre;
+            document.getElementById('detAnio').innerText = data.anio;
+            document.getElementById('detHito').innerText = data.hito;
+            document.getElementById('detCreador').innerText = data.creador;
+            document.getElementById('detAbstraccion').innerText = data.abstraccion;
+            document.getElementById('detParadigma').innerText = data.paradigma;
+            document.getElementById('detTipado').innerText = data.tipado;
+            document.getElementById('detProposito').innerText = data.proposito;
+            document.getElementById('detSintaxis').innerText = data.sintaxis;
+
+            // Tags de características
+            const tagContainer = document.getElementById('detCaracteristicas');
+            tagContainer.innerHTML = '';
+            data.caracteristicas.forEach(c => {
+                const span = document.createElement('span');
+                span.className = 'tag';
+                span.innerText = c;
+                tagContainer.appendChild(span);
+            });
+
+            // Influencias (si están vacías poner '-')
+            document.getElementById('detInfPor').innerText = data.influencias.por.length > 0 ? data.influencias.por.join(', ') : 'Ninguna directa';
+            document.getElementById('detInfEn').innerText = data.influencias.en.length > 0 ? data.influencias.en.join(', ') : 'Ninguna documentada';
+
+            detailsPanel.classList.add('open');
+        }
+
+        function closeDetails() {
+            detailsPanel.classList.remove('open');
+            selectedNode = null;
+            draw();
+        }
+
+        document.getElementById('closePanel').addEventListener('click', closeDetails);
+
+
+        /**
+         * Inicialización
+         */
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas(); // Dispara la computación y el primer frame
+
+    </script>
+</body>
+</html>
